@@ -1,34 +1,48 @@
-###  MR_pleio is a R program to perform Iterative Memdelian Randomization and Pleiotropy analysis (IMRP, Zhu et al. An iterative approach to detect pleiotropy and perform Mendelian 
-###  Randomization analysis using GWAS summary statistics", Bioinformatics, 2020). To call the program, the summary statistics of instrumental variables for the exposure and outcome 
-###  need to be combined into a single data set, with matched reference and effect alleles. We suggested to standardize the summary statistics before performing IMRP, although this is 
-###  not a necessary step. We provide an example of MR analysis of HDL on CAD analyzed in the manuscript. The HLD data was downloaded from http://csg.sph.umich.edu/abecasis/
-###  public/lipids2013/; CAD data was downloaded from http://www.cardiogramplusc4d.org/data-downloads/. If you have any questions, please contact Xiaofeng Zhu (xxz10@case.edu). 
+# MR_pleio is a R program to perform Iterative Memdelian Randomization and Pleiotropy analysis (IMRP)
 
+Zhu et al. An iterative approach to detect pleiotropy and perform Mendelian Randomization analysis using GWAS summary statistics", Bioinformatics, 2020). 
+
+To call the program, the summary statistics of instrumental variables for the exposure and outcome need to be combined into a single data set, with matched reference and effect alleles. We suggested to standardize the summary statistics before performing IMRP, although this is not a necessary step. We provide an example of MR analysis of HDL on CAD analyzed in the manuscript. 
+
+The HLD data was downloaded from http://csg.sph.umich.edu/abecasis/public/lipids2013/
+
+CAD data was downloaded from http://www.cardiogramplusc4d.org/data-downloads/. 
+
+If you have any questions, please contact Xiaofeng Zhu (xxz10@case.edu). 
+
+## How To
 To run the program, type
 
+```
 library(devtools)
 install_github("XiaofengZhuCase/IMRP")
 library("IMRP")
+```
 
-### The combined HDL and CAD data is named HDLCAD1.csv with each columns representing "SNP","Chr","Position","A1","A2","HDL_beta","HDL_se","HDL_N", "CAD_freq","CAD_beta","CAD_se". 
-### Here HDL is a continuous trait and CAD is a binary trait. This approach is the same as suggested in the software MRmix (Qi and Chatterjee, Nat Commun 2019)
+The combined HDL and CAD data is named `HDLCAD1.csv` with each columns representing `SNP`, `Chr`, `Position`, `A1`, `A2`, `HDL_beta`, `HDL_se`, `HDL_N`, `CAD_freq`, `CAD_beta`, `CAD_se`. 
 
-### Standardizing summary statistics
+Here HDL is a continuous trait and CAD is a binary trait. This approach is the same as suggested in the software MRmix (Qi and Chatterjee, Nat Commun 2019)
 
+Standardizing summary statistics
+
+```
 HDLCAD1$x1=HDLCAD1$HDL_beta/HDLCAD1$HDL_se/sqrt(HDLCAD1$HDL_N)
 HDLCAD1$x2=HDLCAD1$CAD_beta*sqrt(2*HDLCAD1$CAD_freq*(1-HDLCAD1$CAD_freq))
 HDLCAD1$x1_se=1/sqrt(HDLCAD1$HDL_N)
 HDLCAD1$x2_se=HDLCAD1$CAD_se*sqrt(2*HDLCAD1$CAD_freq*(1-HDLCAD1$CAD_freq))
+```
 
-### to call MR_pleio, 
+to call MR_pleio, 
 
+```
 HDLCAD1_out=MR_pleio("x2","x1","x2_se","x1_se",as.data.frame(HDLCAD1),SignifThreshold=0.05,rho=0.03, method="IVW")
+```
 
-### In above function, 0.05 is the threshold to define outliers in pleiotropic variants. This value can be changed depending on that more or less potential pleiiotropic variants will be excluded. 
-### rho=0.03 is the correlation coefficient estimated using the genome wide summary statistics of HDL and CAD.
+In the above function, 0.05 is the threshold to define outliers in pleiotropic variants. This value can be changed depending on that more or less potential pleiiotropic variants will be excluded. rho=0.03 is the correlation coefficient estimated using the genome wide summary statistics of HDL and CAD.
 
-### output
- 
+## output
+
+```
 > HDLCAD1_out
 $CausalEstimate
        Beta 
@@ -86,3 +100,4 @@ $GlobalPvalue_aft       ### global P value for testing if there are still pleiot
 
 $chisquare              ### chisqure statistics for testing if tere are any pleiotropic variants among the instrumental variables, following a chisqure distribution with df=number of the instrumental variables-1. 
 [1] 647.4692
+```
